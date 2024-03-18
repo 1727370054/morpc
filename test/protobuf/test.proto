@@ -1,0 +1,64 @@
+syntax = "proto3";
+
+package test;
+
+// 定义下面的选项，表示生成service服务类和rpc方法描述，默认不生成
+option cc_generic_services = true;
+
+message ResultCode
+{
+    int32 errcode = 1;
+    bytes errmsg = 2;
+}
+
+message LoginRequest
+{
+    bytes name = 1;
+    bytes pwd = 2;
+}
+
+// 定义登录响应消息类型
+message LoginResponse
+{
+    ResultCode result = 1;
+    bool success = 2;
+}
+
+message GetFriendListsRequest
+{
+    uint32 userid = 1;
+}
+
+message User
+{
+    bytes name = 1;
+    uint32 age = 2;
+    enum Sex
+    {
+        MAN = 0;
+        WOMAN = 1;
+    }
+    Sex sex = 3;
+}
+
+message GetFriendListsResponse
+{
+    ResultCode result = 1;
+    repeated User friend_list = 2;  // 定义了一个列表类型
+}
+
+// 在protobuf里面定义描述rpc方法的类型 - service
+
+/*
+ 一个service声明了可以被客户端调用的方法，
+ 每个方法指定了请求消息类型和响应消息类型。service定义了服务的接口规范，但是不实现任何逻辑。
+ 实际的逻辑实现是依赖于使用Protobuf的RPC框架
+ *****************************************************************************************
+ 生成的C++代码，UserServiceRPC是一个类，继承google::protobuf::Servic这个基类，用于rpc服务提供者
+ 生成的UserServiceRPC_Stub继承UserServiceRPC, 用于rpc服务消费者
+*/
+service UserServiceRPC
+{
+    rpc Login(LoginRequest) returns(LoginResponse);
+    rpc GetFriendLists(GetFriendListsRequest) returns(GetFriendListsResponse);
+}
