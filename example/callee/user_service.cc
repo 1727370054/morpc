@@ -2,6 +2,8 @@
 #include <string>
 
 #include "user.pb.h"
+#include "morpc_application.h"
+#include "morpc_provider.h"
 
 using namespace test;
 using namespace std;
@@ -54,6 +56,14 @@ private:
 
 int main(int argc, char *argv[])
 {
+    // 框架初始化
+    morpc::MorpcApplication::Init(argc, argv);
+
+    // 把UserService对象发布到rpc节点上
+    morpc::MorpcProvider provider;
+    // provider.NotifyService(new UserService());
+    //  启动一个rpc服务发布节点
+    provider.Run();
 
     return 0;
 }
