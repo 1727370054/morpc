@@ -23,6 +23,9 @@ namespace morpc
         /// @brief 接收命令行参数，进行初始化操作
         static void Init(int argc, char *argv[]);
 
+        /// @brief 返回 MoRpcConfig 对象
+        MoRpcConfig &GetConfig();
+
     private:
         MorpcApplication() {}
         MorpcApplication(const MorpcApplication &) = delete;

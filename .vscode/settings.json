@@ -58,6 +58,12 @@
         "concepts": "cpp",
         "numbers": "cpp",
         "semaphore": "cpp",
-        "stop_token": "cpp"
+        "stop_token": "cpp",
+        "variant": "cpp",
+        "*.inc": "cpp",
+        "complex": "cpp",
+        "source_location": "cpp",
+        "cinttypes": "cpp",
+        "typeindex": "cpp"
     }
 }

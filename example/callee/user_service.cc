@@ -16,8 +16,8 @@ using namespace std;
 class UserService : public UserServiceRPC
 {
 public:
-    UserService();
-    ~UserService();
+    UserService() {}
+    ~UserService() {}
 
     bool Login(std::string username, std::string password)
     {
@@ -61,8 +61,10 @@ int main(int argc, char *argv[])
 
     // 把UserService对象发布到rpc节点上
     morpc::MorpcProvider provider;
-    // provider.NotifyService(new UserService());
+    auto user_server = new UserService();
+    provider.NotifyService(user_server);
     //  启动一个rpc服务发布节点
+    provider.set_thread_num(6);
     provider.Run();
 
     return 0;
