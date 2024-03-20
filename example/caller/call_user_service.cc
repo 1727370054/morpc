@@ -2,6 +2,7 @@
 
 #include "morpc_application.h"
 #include "morpc_channel.h"
+#include "morpc_controller.h"
 #include "user.pb.h"
 
 using namespace test;
@@ -15,9 +16,9 @@ using namespace std;
 int main(int argc, char *argv[])
 {
     // 整个程序启动后, 使用morpc框架的rpc调用服务, 一定需要调用框架初始化函数(只需要初始化一次)
-    morpc::MorpcApplication::Init(argc, argv);
+    morpc::MoRpcApplication::Init(argc, argv);
 
-    // 演示调用rpc方法Login()
+    /*************************** 演示调用rpc方法Login() ***********************************/
 
     auto channel = new morpc::MoRpcChannel();
     UserServiceRPC_Stub stub(channel);
@@ -32,24 +33,65 @@ int main(int argc, char *argv[])
     // 设置rpc调用超时时间, 需要在调用方法之间设置
     channel->set_timeout(3);
 
+    // 定义一个控制对象
+    morpc::MoRpcController controller;
+
     // 发起rpc调用, 同步rpc调用 MoRpcChannel::CallMethod();
-    stub.Login(nullptr, &request, &response, nullptr);
+    stub.Login(&controller, &request, &response, nullptr);
 
-    if (channel->is_timeout())
+    if (controller.Failed())
     {
-        std::cout << "rpc calls return on a timeout" << std::endl;
-        return 0;
-    }
-
-    // rpc调用完成, 读取调用结果
-    if (response.success()) // 成功
-    {
-        cout << "login success! response: " << response.success() << endl;
+        cout << controller.ErrorText() << endl;
     }
     else
     {
-        cout << "login failed! errcode: " << response.result().errcode()
-             << " errmsg: " << response.result().errmsg() << endl;
+        if (channel->is_timeout())
+        {
+            std::cout << "rpc calls return on a timeout" << std::endl;
+            return 0;
+        }
+
+        // rpc调用完成, 读取调用结果
+        if (response.success()) // 成功
+        {
+            cout << "login success! response: " << response.success() << endl;
+        }
+        else
+        {
+            cout << "login failed! errcode: " << response.result().errcode()
+                 << " errmsg: " << response.result().errmsg() << endl;
+        }
+    }
+
+    /*************************** 演示调用rpc方法Register() ***********************************/
+    RegisterRequest req;
+    req.set_id(123456);
+    req.set_username("test register");
+    req.set_password("6666");
+    RegisterResponse res;
+    stub.Register(&controller, &req, &res, nullptr);
+
+    if (controller.Failed())
+    {
+        cout << controller.ErrorText() << endl;
+    }
+    else
+    {
+        if (channel->is_timeout())
+        {
+            std::cout << "rpc calls return on a timeout" << std::endl;
+            return 0;
+        }
+
+        if (res.success())
+        {
+            cout << "register success! response: " << res.success() << endl;
+        }
+        else
+        {
+            cout << "register failed! errcode: " << res.result().errcode()
+                 << " errmsg: " << res.result().errmsg() << endl;
+        }
     }
 
     delete channel;

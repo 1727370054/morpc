@@ -38,6 +38,12 @@ namespace morpc
                                   google::protobuf::Message *response,
                                   google::protobuf::Closure *done)
     {
+        if (controller == nullptr || request == nullptr || response == nullptr)
+        {
+            std::cerr << "controller、request、response is nullprt" << std::endl;
+            exit(EXIT_FAILURE);
+        }
+
         const google::protobuf::ServiceDescriptor *service_desc = method->service();
         std::string service_name = service_desc->name();
         std::string method_name = method->name();
@@ -75,12 +81,12 @@ namespace morpc
         {
             char errtxt[512] = {0};
             sprintf(errtxt, "create socket error! errno:%d", errno);
-            // controller->SetFailed(errtxt);
+            controller->SetFailed(errtxt);
             return;
         }
 
-        std::string ip = MorpcApplication::GetInstance().GetConfig().Select("rpcserver_ip");
-        uint16_t port = atoi(MorpcApplication::GetInstance().GetConfig().Select("rpcserver_port").c_str());
+        std::string ip = MoRpcApplication::GetInstance().GetConfig().Select("rpcserver_ip");
+        uint16_t port = atoi(MoRpcApplication::GetInstance().GetConfig().Select("rpcserver_port").c_str());
 
         struct sockaddr_in server_addr;
         server_addr.sin_family = AF_INET;
@@ -92,14 +98,16 @@ namespace morpc
         {
             char errtxt[512] = {0};
             sprintf(errtxt, "connect error! errno:%d", errno);
-            // controller->SetFailed(errtxt);
+            controller->SetFailed(errtxt);
             return;
         }
 
         // 发送rpc请求
         if (::send(*fd, send_rpc_str.c_str(), send_rpc_str.size(), 0) == -1)
         {
-            std::cout << "send rpc request failed! errno: " << errno << std::endl;
+            char errtxt[512] = {0};
+            sprintf(errtxt, "send rpc request failed! errno:%d", errno);
+            controller->SetFailed(errtxt);
             return;
         }
 
@@ -108,12 +116,16 @@ namespace morpc
         if (ret == 0)
         {
             is_timeout_ = true;
-            std::cout << "timeout return " << std::endl;
+            char errtxt[512] = {0};
+            sprintf(errtxt, "timeout return");
+            controller->SetFailed(errtxt);
             return;
         }
         else if (ret == -1)
         {
-            std::cout << "select error, errno: " << errno << std::endl;
+            char errtxt[512] = {0};
+            sprintf(errtxt, "select error, errno:%d", errno);
+            controller->SetFailed(errtxt);
             return;
         }
 
@@ -121,13 +133,17 @@ namespace morpc
         int recv_size = 0;
         if (-1 == (recv_size = recv(*fd, recv_buf, sizeof(recv_buf), 0)))
         {
-            std::cout << "recv failed! errno: " << errno << std::endl;
+            char errtxt[512] = {0};
+            sprintf(errtxt, "recv failed! errno:%d", errno);
+            controller->SetFailed(errtxt);
             return;
         }
 
         if (!response->ParseFromArray(recv_buf, recv_size))
         {
-            std::cout << "response parse failed!" << std::endl;
+            char errtxt[512] = {0};
+            sprintf(errtxt, "response parse failed!");
+            controller->SetFailed(errtxt);
             return;
         }
     }

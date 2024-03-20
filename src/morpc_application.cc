@@ -13,9 +13,9 @@ static void Usage(const char *argv)
 
 namespace morpc
 {
-    MoRpcConfig MorpcApplication::config_;
+    MoRpcConfig MoRpcApplication::config_;
 
-    void MorpcApplication::Init(int argc, char *argv[])
+    void MoRpcApplication::Init(int argc, char *argv[])
     {
         if (argc < 2)
         {
@@ -45,7 +45,7 @@ namespace morpc
         config_.LoadConfigFile(config_file.c_str());
     }
 
-    MoRpcConfig &MorpcApplication::GetConfig()
+    MoRpcConfig &MoRpcApplication::GetConfig()
     {
         return config_;
     }

@@ -9,14 +9,14 @@
 
 namespace morpc
 {
-    class MorpcApplication
+    class MoRpcApplication
     {
     public:
-        ~MorpcApplication() {}
+        ~MoRpcApplication() {}
 
-        static MorpcApplication &GetInstance()
+        static MoRpcApplication &GetInstance()
         {
-            static MorpcApplication morpc_app;
+            static MoRpcApplication morpc_app;
             return morpc_app;
         }
 
@@ -27,9 +27,9 @@ namespace morpc
         MoRpcConfig &GetConfig();
 
     private:
-        MorpcApplication() {}
-        MorpcApplication(const MorpcApplication &) = delete;
-        MorpcApplication &operator=(const MorpcApplication &) = delete;
+        MoRpcApplication() {}
+        MoRpcApplication(const MoRpcApplication &) = delete;
+        MoRpcApplication &operator=(const MoRpcApplication &) = delete;
 
     private:
         static MoRpcConfig config_;

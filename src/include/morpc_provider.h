@@ -24,11 +24,11 @@ namespace morpc
         std::unordered_map<std::string, const google::protobuf::MethodDescriptor *> m_method_map;
     };
 
-    class MorpcProvider
+    class MoRpcProvider
     {
     public:
-        ~MorpcProvider() {}
-        MorpcProvider() {}
+        ~MoRpcProvider() {}
+        MoRpcProvider() {}
 
         /// @brief 发布rpc方法
         /// @param service rpc服务提供类对象指针

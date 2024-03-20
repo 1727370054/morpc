@@ -10,7 +10,7 @@ namespace morpc
 
 #define HEADER_SIZE sizeof(uint32_t)
 
-    void MorpcProvider::NotifyService(google::protobuf::Service *service)
+    void MoRpcProvider::NotifyService(google::protobuf::Service *service)
     {
         // 获取服务对象的描述信息
         const google::protobuf::ServiceDescriptor *service_desc = service->GetDescriptor();
@@ -31,16 +31,16 @@ namespace morpc
         service_info_map_.insert({service_name, service_info});
     }
 
-    void MorpcProvider::Run()
+    void MoRpcProvider::Run()
     {
-        std::string ip = MorpcApplication::GetInstance().GetConfig().Select("rpcserver_ip");
-        uint16_t port = atoi(MorpcApplication::GetInstance().GetConfig().Select("rpcserver_port").c_str());
+        std::string ip = MoRpcApplication::GetInstance().GetConfig().Select("rpcserver_ip");
+        uint16_t port = atoi(MoRpcApplication::GetInstance().GetConfig().Select("rpcserver_port").c_str());
         muduo::net::InetAddress address(ip, port);
 
         muduo::net::TcpServer server(&event_loop_, address, "RpcProvider");
         // 绑定连接回调和消息读写回调
-        server.setConnectionCallback(std::bind(&MorpcProvider::OnConnection, this, std::placeholders::_1));
-        server.setMessageCallback(std::bind(&MorpcProvider::OnMessage, this, std::placeholders::_1,
+        server.setConnectionCallback(std::bind(&MoRpcProvider::OnConnection, this, std::placeholders::_1));
+        server.setMessageCallback(std::bind(&MoRpcProvider::OnMessage, this, std::placeholders::_1,
                                             std::placeholders::_2, std::placeholders::_3));
 
         // 设置线程数量
@@ -55,7 +55,7 @@ namespace morpc
         event_loop_.loop();
     }
 
-    void MorpcProvider::OnConnection(const muduo::net::TcpConnectionPtr &conn_ptr)
+    void MoRpcProvider::OnConnection(const muduo::net::TcpConnectionPtr &conn_ptr)
     {
         if (!conn_ptr->connected())
         {
@@ -74,7 +74,7 @@ namespace morpc
      *             uint32 args_size = 3;
      *         }
      */
-    void MorpcProvider::OnMessage(const muduo::net::TcpConnectionPtr &conn_ptr,
+    void MoRpcProvider::OnMessage(const muduo::net::TcpConnectionPtr &conn_ptr,
                                   muduo::net::Buffer *buffer,
                                   muduo::Timestamp timestamp)
     {
@@ -139,13 +139,13 @@ namespace morpc
 
         // 给CallMethod绑定一个Closure的回调函数
         google::protobuf::Closure *done =
-            google::protobuf::NewCallback<MorpcProvider, const muduo::net::TcpConnectionPtr &, google::protobuf::Message *>(this, &MorpcProvider::SendRpcResponse, conn_ptr, response);
+            google::protobuf::NewCallback<MoRpcProvider, const muduo::net::TcpConnectionPtr &, google::protobuf::Message *>(this, &MoRpcProvider::SendRpcResponse, conn_ptr, response);
 
         // 根据rpc请求调用rpc节点发布的方法
         service->CallMethod(method_desc, nullptr, request, response, done);
     }
 
-    void MorpcProvider::SendRpcResponse(const muduo::net::TcpConnectionPtr &conn_ptr,
+    void MoRpcProvider::SendRpcResponse(const muduo::net::TcpConnectionPtr &conn_ptr,
                                         google::protobuf::Message *response)
     {
         std::string response_str;

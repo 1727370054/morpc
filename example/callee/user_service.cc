@@ -26,6 +26,13 @@ public:
         return false;
     }
 
+    bool Register(uint32_t id, std::string username, std::string password)
+    {
+        cout << "doing local service: Register" << endl;
+        cout << "id: " << id << " username: " << username << " password: " << password << endl;
+        return true;
+    }
+
     /// @brief 重写UserServiceRPC的虚函数 该方法是框架直接调用
     /// caller ===>(发送rpc请求) Login(LoginRequest) ===> 网络I/O模块 ===> callee
     /// callee ===>(框架先接收到rpc请求)  Login(LoginRequest) ===> 框架回调到下面的重写方法
@@ -59,16 +66,42 @@ public:
         done->Run();
     }
 
+    void Register(::google::protobuf::RpcController *controller,
+                  const ::test::RegisterRequest *request,
+                  ::test::RegisterResponse *response,
+                  ::google::protobuf::Closure *done) override
+    {
+        uint32_t id = request->id();
+        string username = request->username();
+        string password = request->password();
+
+        bool ret = Register(id, username, password);
+        response->set_success(ret);
+        test::ResultCode *code = response->mutable_result();
+        if (ret)
+        {
+            code->set_errcode(0);
+            code->set_errmsg("register success!");
+        }
+        else
+        {
+            code->set_errcode(400);
+            code->set_errmsg("register failed!");
+        }
+
+        done->Run();
+    }
+
 private:
 };
 
 int main(int argc, char *argv[])
 {
     // 框架初始化
-    morpc::MorpcApplication::Init(argc, argv);
+    morpc::MoRpcApplication::Init(argc, argv);
 
     // 把UserService对象发布到rpc节点上
-    morpc::MorpcProvider provider;
+    morpc::MoRpcProvider provider;
     auto user_server = new UserService();
     provider.NotifyService(user_server);
     //  启动一个rpc服务发布节点
