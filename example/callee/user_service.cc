@@ -23,7 +23,7 @@ public:
     {
         cout << "doing local service: Login" << endl;
         cout << "username: " << username << " password: " << password << endl;
-        return true;
+        return false;
     }
 
     /// @brief 重写UserServiceRPC的虚函数 该方法是框架直接调用
@@ -44,8 +44,16 @@ public:
         // 响应结果写入LoginResponse
         response->set_success(ret);
         test::ResultCode *code = response->mutable_result();
-        code->set_errcode(200);
-        code->set_errmsg("login success!");
+        if (ret)
+        {
+            code->set_errcode(0);
+            code->set_errmsg("login success!");
+        }
+        else
+        {
+            code->set_errcode(400);
+            code->set_errmsg("login failed!");
+        }
 
         // 执行回调函数, 执行响应对象数据的序列化和网络发送(框架完成)
         done->Run();

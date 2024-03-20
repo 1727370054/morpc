@@ -6,7 +6,7 @@ option cc_generic_services = true;
 
 message ResultCode 
 {
-    int32 errcode = 1;
+    int32 errcode = 1; // errcode = 0, 表示没有错误
     bytes errmsg = 2;
 }
 
