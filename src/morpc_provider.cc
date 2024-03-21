@@ -2,6 +2,7 @@
 #include "morpc_application.h"
 #include "morpc_header.pb.h"
 #include "logger.h"
+#include "zookeeper_client.h"
 
 #include <functional>
 #include <google/protobuf/descriptor.h>
@@ -46,6 +47,25 @@ namespace morpc
 
         // 设置线程数量
         server.setThreadNum(thread_num_);
+
+        // 把当前rpc节点上要发布的服务注册在zookeeper上, 让rpc client可以在zookeeper发现服务
+        ZookeeperClient cli;
+        cli.Start();
+        // service_name 为永久性节点, method为临时性
+        for (const auto &sp : service_info_map_)
+        {
+            // service_name
+            std::string service_path = "/" + sp.first;
+            cli.Create(service_path.c_str(), nullptr, 0);
+            for (const auto &mp : sp.second.m_method_map)
+            {
+                // "/service_name/method_name"
+                std::string method_path = service_path + "/" + mp.first;
+                char method_path_data[128] = {0};
+                sprintf(method_path_data, "%s:%d", ip.c_str(), port);
+                cli.Create(method_path.c_str(), method_path_data, strlen(method_path_data), ZOO_EPHEMERAL);
+            }
+        }
 
         // 启动网络服务
         server.start();

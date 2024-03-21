@@ -2,6 +2,7 @@
 #include "morpc_header.pb.h"
 #include "morpc_application.h"
 #include "logger.h"
+#include "zookeeper_client.h"
 
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/message.h>
@@ -104,8 +105,27 @@ namespace morpc
             return;
         }
 
-        std::string ip = MoRpcApplication::GetInstance().GetConfig().Select("rpcserver_ip");
-        uint16_t port = atoi(MoRpcApplication::GetInstance().GetConfig().Select("rpcserver_port").c_str());
+        // // 读取的配置文件rpc节点信息
+        // std::string ip = MoRpcApplication::GetInstance().GetConfig().Select("rpcserver_ip");
+        // uint16_t port = atoi(MoRpcApplication::GetInstance().GetConfig().Select("rpcserver_port").c_str());
+        ZookeeperClient cli;
+        cli.Start();
+        std::string method_path = "/" + service_name + "/" + method_name;
+        std::string host_data = cli.GetData(method_path.c_str());
+        if (host_data == "")
+        {
+            controller->SetFailed(method_path + " is not exist!");
+            return;
+        }
+        int index = host_data.find(":");
+        if (index == -1)
+        {
+            controller->SetFailed(method_path + " address is invalid!");
+            return;
+        }
+
+        std::string ip = host_data.substr(0, index);
+        uint16_t port = atoi(host_data.substr(index + 1).c_str());
 
         struct sockaddr_in server_addr;
         server_addr.sin_family = AF_INET;
