@@ -1,5 +1,6 @@
 #include "morpc_config.h"
 #include "morpc_util.h"
+#include "logger.h"
 
 #include <iostream>
 #include <fstream>
@@ -11,7 +12,9 @@ namespace morpc
         std::ifstream ifs(config_file, std::ios::in);
         if (!ifs.is_open())
         {
-            std::cerr << "open " << config_file << " failed!" << std::endl;
+            std::stringstream ss;
+            ss << "open " << config_file << " failed!";
+            LOG_ERROR(ss.str());
             exit(EXIT_FAILURE);
         }
 

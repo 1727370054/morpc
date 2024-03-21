@@ -1,6 +1,7 @@
 #include "morpc_channel.h"
 #include "morpc_header.pb.h"
 #include "morpc_application.h"
+#include "logger.h"
 
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/message.h>
@@ -27,7 +28,9 @@ namespace morpc
         if (fd && *fd != -1)
         {
             ::close(*fd);
-            std::cout << "File descriptor " << *fd << " closed." << std::endl;
+            std::stringstream ss;
+            ss << "file descriptor " << *fd << " closed";
+            LOG_DEBUG(ss.str());
         }
         delete fd;
     };
@@ -40,7 +43,9 @@ namespace morpc
     {
         if (controller == nullptr || request == nullptr || response == nullptr)
         {
-            std::cerr << "controller、request、response is nullprt" << std::endl;
+            std::stringstream ss;
+            ss << "controller、request、response is nullprt";
+            LOG_ERROR(ss.str());
             exit(EXIT_FAILURE);
         }
 
@@ -67,13 +72,27 @@ namespace morpc
         send_rpc_str += rpc_args_str;
 
         // 打印调试信息
-        std::cout << "======================================================" << std::endl;
-        std::cout << "header_size: " << rpc_header_size << std::endl;
-        std::cout << "service_name: " << service_name << std::endl;
-        std::cout << "method_name: " << method_name << std::endl;
-        std::cout << "args_size: " << rpc_args_size << std::endl;
-        std::cout << "args: " << rpc_args_str << std::endl;
-        std::cout << "======================================================" << std::endl;
+        std::stringstream ss;
+        ss << "======================================================";
+        LOG_DEBUG(ss.str());
+        ss.str("");
+        ss << "header_size: " << rpc_header_size;
+        LOG_DEBUG(ss.str());
+        ss.str("");
+        ss << "service_name: " << service_name;
+        LOG_DEBUG(ss.str());
+        ss.str("");
+        ss << "method_name: " << method_name;
+        LOG_DEBUG(ss.str());
+        ss.str("");
+        ss << "args_size: " << rpc_args_size;
+        LOG_DEBUG(ss.str());
+        ss.str("");
+        ss << "args: " << rpc_args_str;
+        LOG_DEBUG(ss.str());
+        ss.str("");
+        ss << "======================================================";
+        LOG_DEBUG(ss.str());
 
         std::unique_ptr<int, decltype(fdDeleter)> fd(new int(-1), fdDeleter);
         *fd = socket(AF_INET, SOCK_STREAM, 0);

@@ -1,6 +1,7 @@
 #include "morpc_provider.h"
 #include "morpc_application.h"
 #include "morpc_header.pb.h"
+#include "logger.h"
 
 #include <functional>
 #include <google/protobuf/descriptor.h>
@@ -49,8 +50,12 @@ namespace morpc
         // 启动网络服务
         server.start();
 
-        std::cout << "RpcProvider start service at ip: " << ip << " port: " << port << std::endl;
-        std::cout << "thread num: " << thread_num_ << std::endl;
+        std::stringstream ss;
+        ss << "RpcProvider start service at ip: " << ip << " port: " << port;
+        LOG_INFO(ss.str());
+        ss.str("");
+        ss << "thread num: " << thread_num_;
+        LOG_INFO(ss.str());
 
         event_loop_.loop();
     }
@@ -60,6 +65,9 @@ namespace morpc
         if (!conn_ptr->connected())
         {
             // 连接已经断开
+            std::stringstream ss;
+            ss << "the connection has been disconnected, close the file descriptor";
+            LOG_INFO(ss.str());
             conn_ptr->shutdown(); // 关闭文件描述符
         }
     }
@@ -103,26 +111,44 @@ namespace morpc
         std::string rpc_args_str = recv_buf.substr(HEADER_SIZE + header_size, args_size);
 
         // 打印调试信息
-        std::cout << "======================================================" << std::endl;
-        std::cout << "header_size: " << header_size << std::endl;
-        std::cout << "service_name: " << service_name << std::endl;
-        std::cout << "method_name: " << method_name << std::endl;
-        std::cout << "args_size: " << args_size << std::endl;
-        std::cout << "args: " << rpc_args_str << std::endl;
-        std::cout << "======================================================" << std::endl;
+        std::stringstream ss;
+        ss << "======================================================";
+        LOG_DEBUG(ss.str());
+        ss.str("");
+        ss << "header_size: " << header_size;
+        LOG_DEBUG(ss.str());
+        ss.str("");
+        ss << "service_name: " << service_name;
+        LOG_DEBUG(ss.str());
+        ss.str("");
+        ss << "method_name: " << method_name;
+        LOG_DEBUG(ss.str());
+        ss.str("");
+        ss << "args_size: " << args_size;
+        LOG_DEBUG(ss.str());
+        ss.str("");
+        ss << "args: " << rpc_args_str;
+        LOG_DEBUG(ss.str());
+        ss.str("");
+        ss << "======================================================";
+        LOG_DEBUG(ss.str());
+        ss.str("");
 
         // 获取service对象和method对象
         auto iter = service_info_map_.find(service_name);
         if (iter == service_info_map_.end())
         {
-            std::cout << "service: " << service_name << " is not exist" << std::endl;
+            ss << "service: " << service_name << " is not exist";
+            LOG_INFO(ss.str());
             return;
         }
 
         auto m = iter->second.m_method_map.find(method_name);
         if (m == iter->second.m_method_map.end())
         {
-            std::cout << service_name << ":" << method_name << " is not exist" << std::endl;
+            ss.str("");
+            ss << service_name << ":" << method_name << " is not exist";
+            LOG_INFO(ss.str());
             return;
         }
         google::protobuf::Service *service = iter->second.m_service;
@@ -133,7 +159,9 @@ namespace morpc
         google::protobuf::Message *response = service->GetResponsePrototype(method_desc).New();
         if (!request->ParseFromString(rpc_args_str))
         {
-            std::cout << "parse request error, content: " << rpc_args_str << std::endl;
+            ss.str("");
+            ss << "parse request error, content: " << rpc_args_str;
+            LOG_INFO(ss.str());
             return;
         }
 

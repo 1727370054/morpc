@@ -4,6 +4,7 @@
 #include "morpc_channel.h"
 #include "morpc_controller.h"
 #include "user.pb.h"
+#include "logger.h"
 
 using namespace test;
 using namespace std;
@@ -41,7 +42,7 @@ int main(int argc, char *argv[])
 
     if (controller.Failed())
     {
-        cout << controller.ErrorText() << endl;
+        LOG_ERROR(controller.ErrorText());
     }
     else
     {
